@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Study Schedule</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="eyebrow">AI Study Planner</div>
+      <h1>Your {{ horizon_days }}-day schedule</h1>
+      <p>Based on {{ daily_hours }} study hour(s) per day. Subjects with
+      closer deadlines and more remaining work are weighted more heavily
+      each day — the bars below show how today's time gets split.</p>
+    </header>
+
+    {% for day in schedule %}
+      <div class="day-card">
+        <div class="day-header">
+          <h3>{{ day.date.strftime('%a, %d %b %Y') }}</h3>
+          <span class="day-total">{{ day.total_hours }}h planned</span>
+        </div>
+
+        {% if day.allocations %}
+          {% for a in day.allocations %}
+            <div class="bar-row">
+              <div class="bar-label">{{ a.subject }}</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: {{ (a.hours / daily_hours * 100) if daily_hours else 0 }}%;"></div>
+              </div>
+              <div class="bar-hours">{{ a.hours }}h</div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="rest-day">Nothing scheduled — everything's covered, or take a rest day.</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    {% if leftover %}
+      <div class="leftover-box">
+        <strong>Heads up:</strong> these subjects still have work remaining
+        after {{ horizon_days }} days at {{ daily_hours }}h/day —
+        consider increasing daily hours or extending the plan:
+        <ul>
+          {% for item in leftover %}
+            <li>{{ item.subject }} — {{ item.hours_remaining }}h still needed</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <a class="back-link" href="{{ url_for('index') }}">&larr; Back to subjects</a>
+  </div>
+</body>
+</html>
